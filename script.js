@@ -19,12 +19,18 @@ const video = document.getElementById('video');
     let channels = [];
 
     function updateTokyoClock() {
-      const text = 'Jam Tokyo: ' + new Date().toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Tokyo',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: true
-      });
+      const now = new Date();
+      const options = { timeZone: 'Asia/Tokyo' };
+      const tokyo = new Date(now.toLocaleString('en-US', options));
+      const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      const h = hari[tokyo.getDay()];
+      const tgl = tokyo.getDate().toString().padStart(2, '0');
+      const bln = bulan[tokyo.getMonth()];
+      const thn = tokyo.getFullYear().toString().slice(-2);
+      const jam = tokyo.getHours().toString().padStart(2, '0');
+      const menit = tokyo.getMinutes().toString().padStart(2, '0');
+      const text = `Tokyo, ${h} ${tgl} ${bln} ${thn}, ${jam}:${menit}`;
       infoClock.textContent = text;
     }
     setInterval(updateTokyoClock, 1000);
