@@ -31,12 +31,35 @@
 
     <div class="controls-advanced">
       <div class="controls-left">
-        <button id="playBtn" title="Play/Pause">▶️</button>
-        <button id="muteBtn" title="Mute/Unmute">🔇</button>
+        <button id="playBtn" title="Play/Pause">
+          <svg class="icon-play" width="16" height="16" viewBox="0 0 16 16" style="vertical-align:middle;fill:#bbb;stroke:#bbb">
+            <polygon points="3,2 14,8 3,14" />
+          </svg>
+          <svg class="icon-pause" width="16" height="16" viewBox="0 0 16 16" style="vertical-align:middle;display:none;fill:#bbb;stroke:#bbb">
+            <rect x="3" y="2" width="3" height="12" rx="1" />
+            <rect x="10" y="2" width="3" height="12" rx="1" />
+          </svg>
+        </button>
+        <button id="muteBtn" title="Mute/Unmute">
+          <svg class="icon-unmute" width="16" height="16" viewBox="0 0 16 16" style="vertical-align:middle;fill:#bbb;stroke:#bbb">
+            <polygon points="2,6 6,6 10,2 10,14 6,10 2,10" />
+            <rect x="11" y="6" width="3" height="4" rx="1" />
+          </svg>
+          <svg class="icon-mute" width="16" height="16" viewBox="0 0 16 16" style="vertical-align:middle;display:none;fill:#bbb;stroke:#bbb">
+            <polygon points="2,6 6,6 10,2 10,14 6,10 2,10" />
+            <line x1="12" y1="5" x2="15" y2="11" stroke="#e74c3c" stroke-width="2" />
+            <line x1="15" y1="5" x2="12" y2="11" stroke="#e74c3c" stroke-width="2" />
+          </svg>
+        </button>
         <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.5">
       </div>
       <div class="controls-right">
-        <button id="pipBtn" title="Mini Player">🗗</button>
+        <button id="pipBtn" title="Mini Player">
+          <svg width="16" height="16" viewBox="0 0 16 16" style="vertical-align:middle;fill:#bbb;stroke:#bbb">
+            <rect x="2" y="2" width="12" height="12" rx="2" fill="none" stroke-width="1.5"/>
+            <rect x="8.5" y="8.5" width="4" height="4" rx="0.8" />
+          </svg>
+        </button>
         <button id="fullscreenBtn" title="Fullscreen">⛶</button>
       </div>
     </div>

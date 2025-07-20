@@ -37,10 +37,17 @@ const video = document.getElementById('video');
 
     playBtn.addEventListener('click', () => {
       if (video.paused) {
-        video.play().then(() => playBtn.textContent = '⏸️').catch(() => playBtn.textContent = '▶️');
+        video.play().then(() => {
+          document.querySelector('.icon-play').style.display = 'none';
+          document.querySelector('.icon-pause').style.display = '';
+        }).catch(() => {
+          document.querySelector('.icon-play').style.display = '';
+          document.querySelector('.icon-pause').style.display = 'none';
+        });
       } else {
         video.pause();
-        playBtn.textContent = '▶️';
+        document.querySelector('.icon-play').style.display = '';
+        document.querySelector('.icon-pause').style.display = 'none';
       }
     });
 
@@ -49,18 +56,26 @@ const video = document.getElementById('video');
         previousVolume = video.volume;
         video.volume = 0;
         volumeSlider.value = 0;
-        muteBtn.textContent = '🔇';
+        document.querySelector('.icon-unmute').style.display = 'none';
+        document.querySelector('.icon-mute').style.display = '';
       } else {
         video.volume = previousVolume || 0.5;
         volumeSlider.value = previousVolume || 0.5;
-        muteBtn.textContent = '🔊';
+        document.querySelector('.icon-unmute').style.display = '';
+        document.querySelector('.icon-mute').style.display = 'none';
       }
     });
 
     volumeSlider.addEventListener('input', () => {
       video.volume = parseFloat(volumeSlider.value);
-      muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
-      if (video.volume > 0) previousVolume = video.volume;
+      if (video.volume === 0) {
+        document.querySelector('.icon-unmute').style.display = 'none';
+        document.querySelector('.icon-mute').style.display = '';
+      } else {
+        document.querySelector('.icon-unmute').style.display = '';
+        document.querySelector('.icon-mute').style.display = 'none';
+        previousVolume = video.volume;
+      }
     });
 
     fullscreenBtn.addEventListener('click', () => {
@@ -104,9 +119,16 @@ const video = document.getElementById('video');
       if (!isTyping) {
         if (e.code === 'Space') {
           e.preventDefault();
-          video.paused
-            ? video.play().then(() => playBtn.textContent = '⏸️')
-            : (video.pause(), playBtn.textContent = '▶️');
+          if (video.paused) {
+            video.play().then(() => {
+              document.querySelector('.icon-play').style.display = 'none';
+              document.querySelector('.icon-pause').style.display = '';
+            });
+          } else {
+            video.pause();
+            document.querySelector('.icon-play').style.display = '';
+            document.querySelector('.icon-pause').style.display = 'none';
+          }
         }
         if (e.code === 'ArrowRight') {
           e.preventDefault();
@@ -121,13 +143,25 @@ const video = document.getElementById('video');
           e.preventDefault();
           video.volume = Math.max(0, video.volume - 0.05);
           volumeSlider.value = video.volume;
-          muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+          if (video.volume === 0) {
+            document.querySelector('.icon-unmute').style.display = 'none';
+            document.querySelector('.icon-mute').style.display = '';
+          } else {
+            document.querySelector('.icon-unmute').style.display = '';
+            document.querySelector('.icon-mute').style.display = 'none';
+          }
         }
         if (e.key === '=' || e.key === '+') {
           e.preventDefault();
           video.volume = Math.min(1, video.volume + 0.05);
           volumeSlider.value = video.volume;
-          muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+          if (video.volume === 0) {
+            document.querySelector('.icon-unmute').style.display = 'none';
+            document.querySelector('.icon-mute').style.display = '';
+          } else {
+            document.querySelector('.icon-unmute').style.display = '';
+            document.querySelector('.icon-mute').style.display = 'none';
+          }
         }
       }
     });
@@ -184,7 +218,13 @@ const video = document.getElementById('video');
           video.oncanplay = null;
         };
         video.muted = false;
-        video.play().then(() => playBtn.textContent = '⏸️').catch(() => playBtn.textContent = '▶️');
+        video.play().then(() => {
+          document.querySelector('.icon-play').style.display = 'none';
+          document.querySelector('.icon-pause').style.display = '';
+        }).catch(() => {
+          document.querySelector('.icon-play').style.display = '';
+          document.querySelector('.icon-pause').style.display = 'none';
+        });
         setTimeout(() => video.classList.remove('buffering'), 2500);
       });
       infoChannel.textContent = 'Channel: ' + name;
@@ -237,13 +277,20 @@ const video = document.getElementById('video');
     });
     video.addEventListener('playing', () => {
       video.classList.remove('buffering');
-      playBtn.textContent = '⏸️';
+      document.querySelector('.icon-play').style.display = 'none';
+      document.querySelector('.icon-pause').style.display = '';
     });
 
     window.addEventListener('load', () => {
       video.volume = parseFloat(volumeSlider.value || 0.5);
       previousVolume = video.volume;
       video.muted = false;
-      muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+      if (video.volume === 0) {
+        document.querySelector('.icon-unmute').style.display = 'none';
+        document.querySelector('.icon-mute').style.display = '';
+      } else {
+        document.querySelector('.icon-unmute').style.display = '';
+        document.querySelector('.icon-mute').style.display = 'none';
+      }
       loadPlaylist();
     });
