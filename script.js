@@ -147,10 +147,23 @@ const video = document.getElementById('video');
 
     function playStream(url, name = '') {
       video.classList.add('buffering');
+      // Reset bar biru dan posisi video ke awal sebelum load
+      video.pause();
+      video.currentTime = 0;
+      timelineFill.style.width = '0%';
+      hls.detachMedia(); // Unbind previous events and detach
       hls.loadSource(url);
       hls.attachMedia(video);
       hls.currentLevel = -1;
+      // Remove previous canplay handler if any
+      video.oncanplay = null;
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        // Set ulang bar biru dan posisi video ke awal saat video siap
+        video.oncanplay = () => {
+          video.currentTime = 0;
+          timelineFill.style.width = '0%';
+          video.oncanplay = null;
+        };
         video.muted = false;
         video.play().then(() => playBtn.textContent = '⏸️').catch(() => playBtn.textContent = '▶️');
         setTimeout(() => video.classList.remove('buffering'), 2500);
