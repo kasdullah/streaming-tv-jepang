@@ -1,3 +1,18 @@
+/* Style untuk footer credit */
+.footer-credit {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #777;
+}
+/* Style untuk pesan error dan link alternatif di bawah player */
+.info-error {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ccc;
+}
+.alt-link {
+  color: #4cc3ff;
+}
 body {
       background: #111;
       color: #fff;
