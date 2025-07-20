@@ -182,6 +182,8 @@ const video = document.getElementById('video');
         item.onclick = () => playStream(c.url, c.name);
         channelList.appendChild(item);
       });
+      // Scroll ke atas setiap update
+      channelList.scrollTop = 0;
     }
 
     searchInput.addEventListener('input', () => {
