@@ -116,6 +116,19 @@ const video = document.getElementById('video');
           e.preventDefault();
           video.currentTime = Math.max(video.currentTime - 5, 0);
         }
+        // Volume control dengan - dan =
+        if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          video.volume = Math.max(0, video.volume - 0.05);
+          volumeSlider.value = video.volume;
+          muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+        }
+        if (e.key === '=' || e.key === '+') {
+          e.preventDefault();
+          video.volume = Math.min(1, video.volume + 0.05);
+          volumeSlider.value = video.volume;
+          muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+        }
       }
     });
 
