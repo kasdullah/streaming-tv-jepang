@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Streaming TV Jepang</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+
+    #searchInput:-webkit-autofill {
+     background-color: #2c2c2c !important;
+     -webkit-box-shadow: 0 0 0px 1000px #2c2c2c inset !important;
+     -webkit-text-fill-color: #fff !important;
+    }
+
+    .combo-wrapper {
+      width: 100%;
+      max-width: 710px;
+      margin: 0 auto;
+      margin-bottom: 6px;
+      background: #222;
+      border-radius: 8px;
+      padding: 6px 6px;
+    }
+
+    .search-wrapper {
+      position: relative;
+    }
+
+    #searchInput {
+      background: #2c2c2c;
+      color: #fff;
+      font-size: 15px;
+      padding: 8px 34px 8px 8px;
+      border: none;
+      border-bottom: 0.5px solid #444;
+      border-radius: 5px 5px 0 0;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .clear-btn {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+
+    #channelList {
+      max-height: 75px;
+      overflow-y: auto;
+      background: #2c2c2c;
+      border-top: 1px solid #444;
+      border-radius: 0 0 4px 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #888 #000;
+    }
+
+    #channelList::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #channelList::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    #channelList::-webkit-scrollbar-thumb {
+      background-color: #888;
+      border-radius: 4px;
+    }
+
+    .channel-item {
+      padding: 4px 10px;
+      font-size: 14px;
+      line-height: 1.2;
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .channel-item:hover { background: #444; }
+
+    .media-wrapper {
+      max-width: 720px;
+      margin: 8px auto;
+      background: #000;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #555;
+      border-bottom: 1px solid #333;
+      padding: 2px 10px;
+      font-size: 14px;
+      color: white;
+    }
+
+    video {
+      width: 100%;
+      background: #000;
+      display: block;
+    }
+
+    .timeline-bar {
+      width: 100%;
+      height: 4px;
+      background: #333;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      margin: 2px 0;
+    }
+
+    .timeline-buffered {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #777;
+      width: 0%;
+      z-index: 0;
+    }
+
+    .timeline-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #4cc3ff;
+      width: 0%;
+      z-index: 1;
+    }
+
+    .controls-advanced {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #555;
+      border-top: 1px solid #333;
+      padding: 2px 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .controls-left button,
+    .controls-right button,
+    .controls-left input[type="range"] {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .controls-left input[type="range"] {
+      width: 80px;
+      height: 4px;
+      accent-color: #4cc3ff;
+    }
+
+    .media-wrapper:fullscreen .controls-advanced,
+    .media-wrapper:fullscreen .timeline-bar,
+    .media-wrapper:fullscreen .info-bar,
+    .media-wrapper:-webkit-full-screen .controls-advanced,
+    .media-wrapper:-webkit-full-screen .timeline-bar,
+    .media-wrapper:-webkit-full-screen .info-bar {
+      display: none !important;
+    }
+    h1 {
+       font-size: 24px;
+       margin-top: -20px;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>📺 Streaming TV Jepang</h1>
+
+  <div class="combo-wrapper">
+    <div class="search-wrapper">
+      <input type="text" id="searchInput" spellcheck="false" placeholder="🔍 Cari nama channel...">
+      <button class="clear-btn" id="clearBtn" title="Hapus">x</button>
+    </div>
+    <div id="channelList"></div>
+  </div>
+
+  <div class="media-wrapper">
+    <div class="info-bar">
+      <div id="infoChannel">Channel: -</div>
+      <div id="infoClock">Jam Tokyo: -</div>
+    </div>
+
+    <video id="video" preload="auto" autoplay playsinline></video>
+
+    <div class="timeline-bar" id="timelineBar">
+      <div class="timeline-buffered" id="timelineBuffered"></div>
+      <div class="timeline-fill" id="timelineFill"></div>
+    </div>
+
+    <div class="controls-advanced">
+      <div class="controls-left">
+        <button id="playBtn" title="Play/Pause">▶️</button>
+        <button id="muteBtn" title="Mute/Unmute">🔇</button>
+        <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.5">
+      </div>
+      <div class="controls-right">
+        <button id="pipBtn" title="Mini Player">🗗</button>
+        <button id="fullscreenBtn" title="Fullscreen">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 10px; font-size: 14px; color: #ccc;">
+    Jika channel mengalami error, silakan gunakan
+    <a href="https://kasdullah.com/tvj/alt" target="_blank" style="color: #4cc3ff;">link alternatif ini</a>.
+  </p>
+
+  <footer style="margin-top: 10px; font-size: 13px; color: #777;">
+    Created by <a href="https://www.instagram.com/ks.dullah/" target="_blank" style="color: #4cc3ff;">Kasdullah</a>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script>
+    const video = document.getElementById('video');
+    const playBtn = document.getElementById('playBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const timelineBar = document.getElementById('timelineBar');
+    const timelineFill = document.getElementById('timelineFill');
+    const timelineBuffered = document.getElementById('timelineBuffered');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const pipBtn = document.getElementById('pipBtn');
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const channelList = document.getElementById('channelList');
+    const infoChannel = document.getElementById('infoChannel');
+    const infoClock = document.getElementById('infoClock');
+
+    let previousVolume = 0.5;
+    let hls = new Hls();
+    let channels = [];
+
+    function updateTokyoClock() {
+      const text = 'Jam Tokyo: ' + new Date().toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Tokyo',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true
+      });
+      infoClock.textContent = text;
+    }
+    setInterval(updateTokyoClock, 1000);
+
+    playBtn.addEventListener('click', () => {
+      if (video.paused) {
+        video.play().then(() => playBtn.textContent = '⏸️').catch(() => playBtn.textContent = '▶️');
+      } else {
+        video.pause();
+        playBtn.textContent = '▶️';
+      }
+    });
+
+    muteBtn.addEventListener('click', () => {
+      if (video.volume > 0) {
+        previousVolume = video.volume;
+        video.volume = 0;
+        volumeSlider.value = 0;
+        muteBtn.textContent = '🔇';
+      } else {
+        video.volume = previousVolume || 0.5;
+        volumeSlider.value = previousVolume || 0.5;
+        muteBtn.textContent = '🔊';
+      }
+    });
+
+    volumeSlider.addEventListener('input', () => {
+      video.volume = parseFloat(volumeSlider.value);
+      muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+      if (video.volume > 0) previousVolume = video.volume;
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        video.parentElement.requestFullscreen();
+      }
+    });
+
+    pipBtn.addEventListener('click', async () => {
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else {
+          await video.requestPictureInPicture();
+        }
+      } catch (err) {
+        console.error('Mini player gagal:', err);
+      }
+    });
+
+    timelineBar.addEventListener('click', e => {
+      const percent = e.offsetX / timelineBar.clientWidth;
+      if (video.duration) video.currentTime = percent * video.duration;
+    });
+
+    video.addEventListener('timeupdate', () => {
+      if (video.duration) {
+        const buffered = video.buffered;
+        if (buffered.length) {
+          const bufferedEnd = buffered.end(buffered.length - 1);
+          timelineBuffered.style.width = (bufferedEnd / video.duration) * 100 + '%';
+        }
+        timelineFill.style.width = (video.currentTime / video.duration) * 100 + '%';
+      }
+    });
+
+    window.addEventListener('keydown', e => {
+      const isTyping = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+      if (!isTyping) {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          video.paused
+            ? video.play().then(() => playBtn.textContent = '⏸️')
+            : (video.pause(), playBtn.textContent = '▶️');
+        }
+        if (e.code === 'ArrowRight') {
+          e.preventDefault();
+          if (video.duration) video.currentTime = Math.min(video.currentTime + 5, video.duration);
+        }
+        if (e.code === 'ArrowLeft') {
+          e.preventDefault();
+          video.currentTime = Math.max(video.currentTime - 5, 0);
+        }
+      }
+    });
+  </script>
+  <script>
+    async function loadPlaylist() {
+      try {
+        const res = await fetch('https://raw.githubusercontent.com/luongz/iptv-jp/main/jp.m3u');
+        const text = await res.text();
+        const lines = text.replace(/\r/g, '').split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          const info = lines[i];
+          const url = lines[i + 1]?.trim();
+          if (info?.startsWith('#EXTINF') && url?.startsWith('http')) {
+            const name = info.split(',')[1]?.trim() || 'Channel';
+            const groupMatch = info.match(/group-title="(.*?)"/);
+            if (groupMatch?.[1].toLowerCase() === 'information') continue;
+            channels.push({ name, url });
+          }
+        }
+        channels.sort((a, b) => a.name.localeCompare(b.name));
+        updateChannelList(channels);
+        const savedUrl = localStorage.getItem('lastChannelUrl');
+        const savedChannel = channels.find(c => c.url === savedUrl);
+        const first = savedChannel || channels[0];
+        if (first) playStream(first.url, first.name);
+      } catch (err) {
+        infoChannel.textContent = 'Gagal memuat daftar channel';
+        console.error('Playlist error:', err);
+      }
+    }
+
+    function playStream(url, name = '') {
+      video.classList.add('buffering');
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.currentLevel = -1;
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.muted = false;
+        video.play().then(() => playBtn.textContent = '⏸️').catch(() => playBtn.textContent = '▶️');
+        setTimeout(() => video.classList.remove('buffering'), 2500);
+      });
+      infoChannel.textContent = 'Channel: ' + name;
+      localStorage.setItem('lastChannelUrl', url);
+      localStorage.setItem('lastChannelName', name);
+    }
+
+    function updateChannelList(list) {
+      channelList.innerHTML = '';
+      list.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'channel-item';
+        item.textContent = c.name;
+        item.onclick = () => playStream(c.url, c.name);
+        channelList.appendChild(item);
+      });
+    }
+
+    searchInput.addEventListener('input', () => {
+      clearBtn.style.display = searchInput.value ? 'block' : 'none';
+      const keyword = searchInput.value.toLowerCase();
+      const matched = channels.filter(c => c.name.toLowerCase().includes(keyword));
+      const bsOnly = matched.filter(c => c.name.toLowerCase().startsWith('bs '));
+      const nonBs = matched.filter(c => !c.name.toLowerCase().startsWith('bs '));
+      updateChannelList([...nonBs, ...bsOnly]);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      clearBtn.style.display = 'none';
+      updateChannelList(channels);
+    });
+
+    window.addEventListener('online', () => {
+      const lastUrl = localStorage.getItem('lastChannelUrl');
+      const lastName = localStorage.getItem('lastChannelName');
+      if (lastUrl && lastName) {
+        video.classList.add('buffering');
+        hls.loadSource(lastUrl);
+        hls.startLoad();
+        video.play().then(() => playBtn.textContent = '⏸️');
+        setTimeout(() => video.classList.remove('buffering'), 2500);
+        infoChannel.textContent = 'Channel: ' + lastName;
+      }
+    });
+
+    setInterval(() => {
+      if (video.readyState < 3 && !video.paused && navigator.onLine) {
+        const lastUrl = localStorage.getItem('lastChannelUrl');
+        const lastName = localStorage.getItem('lastChannelName');
+        if (lastUrl && lastName) {
+          video.classList.add('buffering');
+          hls.loadSource(lastUrl);
+          hls.startLoad();
+          video.play().then(() => playBtn.textContent = '⏸️');
+          setTimeout(() => video.classList.remove('buffering'), 2500);
+          infoChannel.textContent = 'Channel: ' + lastName;
+        }
+      }
+    }, 15000);
+
+    window.addEventListener('load', () => {
+      video.volume = parseFloat(volumeSlider.value || 0.5);
+      previousVolume = video.volume;
+      video.muted = false;
+      muteBtn.textContent = video.volume === 0 ? '🔇' : '🔊';
+      loadPlaylist();
+    });
+  </script>
+</body>
+</html>
