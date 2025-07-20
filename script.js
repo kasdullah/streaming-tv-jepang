@@ -199,33 +199,25 @@ const video = document.getElementById('video');
       updateChannelList(channels);
     });
 
+
+    // Saat internet kembali, lanjutkan load video (buffer pink akan bertambah)
     window.addEventListener('online', () => {
-      const lastUrl = localStorage.getItem('lastChannelUrl');
-      const lastName = localStorage.getItem('lastChannelName');
-      if (lastUrl && lastName) {
-        video.classList.add('buffering');
-        hls.loadSource(lastUrl);
+      if (hls) {
         hls.startLoad();
-        video.play().then(() => playBtn.textContent = '⏸️');
-        setTimeout(() => video.classList.remove('buffering'), 2500);
-        infoChannel.textContent = 'Channel: ' + lastName;
       }
     });
 
-    setInterval(() => {
-      if (video.readyState < 3 && !video.paused && navigator.onLine) {
-        const lastUrl = localStorage.getItem('lastChannelUrl');
-        const lastName = localStorage.getItem('lastChannelName');
-        if (lastUrl && lastName) {
-          video.classList.add('buffering');
-          hls.loadSource(lastUrl);
-          hls.startLoad();
-          video.play().then(() => playBtn.textContent = '⏸️');
-          setTimeout(() => video.classList.remove('buffering'), 2500);
-          infoChannel.textContent = 'Channel: ' + lastName;
-        }
-      }
-    }, 15000);
+
+    // Hilangkan interval auto-refresh video, biarkan HLS handle buffering sendiri
+
+    // Saat buffering, tampilkan animasi, dan lanjutkan otomatis jika buffer sudah cukup
+    video.addEventListener('waiting', () => {
+      video.classList.add('buffering');
+    });
+    video.addEventListener('playing', () => {
+      video.classList.remove('buffering');
+      playBtn.textContent = '⏸️';
+    });
 
     window.addEventListener('load', () => {
       video.volume = parseFloat(volumeSlider.value || 0.5);
