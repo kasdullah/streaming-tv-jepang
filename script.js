@@ -133,7 +133,11 @@ const video = document.getElementById('video');
         updateChannelList(channels);
         const savedUrl = localStorage.getItem('lastChannelUrl');
         const savedChannel = channels.find(c => c.url === savedUrl);
-        const first = savedChannel || channels[0];
+        let first = savedChannel;
+        if (!first) {
+          // Cari channel TBS
+          first = channels.find(c => c.name.toLowerCase().includes('tbs')) || channels[0];
+        }
         if (first) playStream(first.url, first.name);
       } catch (err) {
         infoChannel.textContent = 'Gagal memuat daftar channel';
