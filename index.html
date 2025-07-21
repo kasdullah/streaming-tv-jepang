@@ -31,6 +31,19 @@
 
     <video id="video" preload="auto" autoplay playsinline width="720" height="405"></video>
 
+    <div class="video-info-container">
+      <div class="video-resolution">
+        Resolusi: <span id="videoResolution">-</span>
+      </div>
+      <div class="video-framerate">
+        Frame rate: <span id="videoFramerate">-</span>
+      </div>
+      <div class="error-history">
+        <div class="error-history-title">Riwayat Error:</div>
+        <div id="errorHistoryList" class="error-history-list"></div>
+      </div>
+    </div>
+
     <div class="timeline-bar" id="timelineBar">
       <div class="timeline-buffered" id="timelineBuffered"></div>
       <div class="timeline-fill" id="timelineFill"></div>
@@ -69,6 +82,16 @@
         </button>
         <button id="fullscreenBtn" title="Fullscreen">⛶</button>
       </div>
+    </div>
+
+    <div class="video-url-container">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;color:#aaa;">URL m3u:</span>
+        <button id="copyUrlBtn" title="Copy URL" style="background:#333;border:none;color:#eee;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:13px;">
+          Copy
+        </button>
+      </div>
+      <pre id="currentUrlBox" class="url-box"></pre>
     </div>
   </div>
 

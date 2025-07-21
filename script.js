@@ -226,8 +226,32 @@ video.addEventListener('timeupdate', () => {
       }
     }
 
+    // Fungsi untuk menambah error/history status
+function addErrorHistory(msg) {
+  const list = document.getElementById('errorHistoryList');
+  const div = document.createElement('div');
+  div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  list.appendChild(div);
+  list.scrollTop = list.scrollHeight;
+}
+
+// Tambahkan status pekerjaan ke error history
+window.addEventListener('online', () => {
+  addErrorHistory('Internet tersambung, mencoba lanjut loading video...');
+});
+window.addEventListener('offline', () => {
+  addErrorHistory('Internet terputus, menunggu koneksi...');
+});
+video.addEventListener('waiting', () => {
+  addErrorHistory('Sedang loading video...');
+});
+video.addEventListener('stalled', () => {
+  addErrorHistory('Buffer video habis, mencoba lanjut...');
+});
+
     function playStream(url, name = '') {
       currentChannelUrl = url; // Simpan url channel aktif
+      updateUrlBox(url);
       video.classList.add('buffering');
       // Reset bar biru dan posisi video ke awal sebelum load
       video.pause();
@@ -245,6 +269,7 @@ video.addEventListener('timeupdate', () => {
           video.currentTime = 0;
           timelineFill.style.width = '0%';
           video.oncanplay = null;
+          updateVideoResolution(); // update resolusi saat channel baru siap
         };
         video.muted = false;
         video.play().then(() => {
@@ -259,6 +284,7 @@ video.addEventListener('timeupdate', () => {
       infoChannel.textContent = 'Channel: ' + name;
       localStorage.setItem('lastChannelUrl', url);
       localStorage.setItem('lastChannelName', name);
+      addErrorHistory(`Memutar channel: ${name}`);
     }
 
     function updateChannelList(list) {
@@ -358,3 +384,100 @@ window.addEventListener('keydown', e => {
     refreshVideoPlayer();
   }
 });
+
+// Update resolusi video saat metadata tersedia
+function updateVideoResolution() {
+  document.getElementById('videoResolution').textContent =
+    video.videoWidth && video.videoHeight
+      ? `${video.videoWidth} x ${video.videoHeight}`
+      : '-';
+
+  // Update frame rate jika tersedia
+  let fr = '-';
+  if (video.getVideoPlaybackQuality) {
+    const q = video.getVideoPlaybackQuality();
+    if (q.totalVideoFrames && video.duration) {
+      fr = Math.round(q.totalVideoFrames / video.duration);
+    }
+  } else if (video.webkitDecodedFrameCount && video.duration) {
+    fr = Math.round(video.webkitDecodedFrameCount / video.duration);
+  }
+  document.getElementById('videoFramerate').textContent = fr;
+}
+video.addEventListener('loadedmetadata', updateVideoResolution);
+
+// Pastikan update resolusi saat playStream dipanggil (ganti channel)
+function playStream(url, name = '') {
+  currentChannelUrl = url;
+  updateUrlBox(url);
+  video.classList.add('buffering');
+  video.pause();
+  video.currentTime = 0;
+  timelineFill.style.width = '0%';
+  hls.detachMedia();
+  hls.loadSource(url);
+  hls.attachMedia(video);
+  hls.currentLevel = -1;
+  video.oncanplay = null;
+  hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    video.oncanplay = () => {
+      video.currentTime = 0;
+      timelineFill.style.width = '0%';
+      video.oncanplay = null;
+      updateVideoResolution(); // update resolusi saat channel baru siap
+    };
+    video.muted = false;
+    video.play().then(() => {
+      document.querySelector('.icon-play').style.display = 'none';
+      document.querySelector('.icon-pause').style.display = '';
+    }).catch(() => {
+      document.querySelector('.icon-play').style.display = '';
+      document.querySelector('.icon-pause').style.display = 'none';
+    });
+    setTimeout(() => video.classList.remove('buffering'), 2500);
+  });
+  infoChannel.textContent = 'Channel: ' + name;
+  localStorage.setItem('lastChannelUrl', url);
+  localStorage.setItem('lastChannelName', name);
+  addErrorHistory(`Memutar channel: ${name}`);
+}
+
+// Contoh: tangkap error dari HLS.js dan video
+if (window.Hls) {
+  hls.on(Hls.Events.ERROR, function(event, data) {
+    addErrorHistory(`HLS: ${data.type} - ${data.details || ''}`);
+  });
+}
+video.addEventListener('error', () => {
+  addErrorHistory('Video error: ' + (video.error ? video.error.message : 'Unknown'));
+});
+
+function updateUrlBox(url) {
+  document.getElementById('currentUrlBox').textContent = url || '-';
+}
+document.getElementById('copyUrlBtn').addEventListener('click', () => {
+  const url = document.getElementById('currentUrlBox').textContent;
+  navigator.clipboard.writeText(url);
+});
+
+let lastFrameCount = 0;
+let lastTime = Date.now();
+
+function updateVideoFramerate() {
+  let fr = '-';
+  if (video.getVideoPlaybackQuality) {
+    const q = video.getVideoPlaybackQuality();
+    const now = Date.now();
+    if (lastTime) {
+      const deltaFrames = q.totalVideoFrames - lastFrameCount;
+      const deltaTime = (now - lastTime) / 1000;
+      if (deltaTime > 0) {
+        fr = Math.round(deltaFrames / deltaTime);
+      }
+    }
+    lastFrameCount = q.totalVideoFrames;
+    lastTime = now;
+  }
+  document.getElementById('videoFramerate').textContent = fr;
+}
+setInterval(updateVideoFramerate, 1000);

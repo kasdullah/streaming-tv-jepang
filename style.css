@@ -245,3 +245,87 @@ body {
 .btn-refresh:hover {
   background: #444;
 }
+.video-info-container {
+  position: absolute;
+  right: 0;
+  top: 195px; /* Turunkan agar sejajar dengan garis atas info-bar */
+  width: 220px;
+  min-height: 120px;
+  max-height: 400px;
+  background: #222;
+  color: #eee;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0004;
+  padding: 12px 10px;
+  font-size: 13px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Dekatkan ke media player */
+  margin-right: 65px;
+}
+.video-resolution {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.video-framerate {
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+.error-history {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.error-history-title {
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+.error-history-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 260px; /* Tambah tinggi agar lebih ke bawah */
+  background: #181818;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 12px;
+}
+.error-history-list div {
+  margin-bottom: 4px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 2px;
+  word-break: break-word;
+}
+.video-url-container {
+  width: 220px;
+  background: #181818;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #0004;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: #eee;
+  position: absolute;
+  right: 0;
+  /* Turunkan agar sejajar dengan video-info-container */
+  top: 560px;
+  z-index: 10;
+  /* Dekatkan ke media player */
+  margin-right: 65px;
+}
+.url-box {
+  background: #222;
+  color: #4cc3ff;
+  border-radius: 4px;
+  padding: 6px;
+  margin-top: 6px;
+  font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+  font-size: 12px;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre;
+  box-sizing: border-box;
+  border: 1px solid #333;
+}
