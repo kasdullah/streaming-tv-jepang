@@ -274,6 +274,10 @@ const video = document.getElementById('video');
     // Saat buffering, tampilkan animasi, dan lanjutkan otomatis jika buffer sudah cukup
     video.addEventListener('waiting', () => {
       video.classList.add('buffering');
+      if (hls) hls.startLoad(); // Paksa HLS.js lanjut download
+    });
+    video.addEventListener('stalled', () => {
+      if (hls) hls.startLoad(); // Paksa HLS.js lanjut download
     });
     video.addEventListener('playing', () => {
       video.classList.remove('buffering');
