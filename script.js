@@ -16,6 +16,7 @@ const video = document.getElementById('video');
 
     let previousVolume = 0.5;
     let hls = new Hls();
+    let currentChannelUrl = ''; // Tambahkan variabel global
     let channels = [];
 
     function updateTokyoClock() {
@@ -109,10 +110,37 @@ const video = document.getElementById('video');
         if (buffered.length) {
           const bufferedEnd = buffered.end(buffered.length - 1);
           timelineBuffered.style.width = (bufferedEnd / video.duration) * 100 + '%';
+          // Jika posisi playhead (bar biru) mendekati akhir buffer (bar pink), paksa HLS.js lanjut load
+          if (bufferedEnd - video.currentTime < 5 && hls && hls.media && video.readyState < 3) {
+            hls.startLoad(); // Paksa permintaan segmen baru
+          }
         }
         timelineFill.style.width = (video.currentTime / video.duration) * 100 + '%';
       }
     });
+
+    // Paksa proses loading video baru saat bar biru mendekati akhir bar pink, tapi jangan terlalu sering
+let lastForceLoad = 0;
+video.addEventListener('timeupdate', () => {
+  if (video.duration) {
+    const buffered = video.buffered;
+    if (buffered.length) {
+      const bufferedEnd = buffered.end(buffered.length - 1);
+      timelineBuffered.style.width = (bufferedEnd / video.duration) * 100 + '%';
+      // Jika posisi playhead (bar biru) mendekati akhir buffer (bar pink), paksa HLS.js lanjut load (maksimal 1x per detik)
+      if (
+        bufferedEnd - video.currentTime < 5 &&
+        hls &&
+        hls.media &&
+        Date.now() - lastForceLoad > 1000
+      ) {
+        hls.startLoad();
+        lastForceLoad = Date.now();
+      }
+    }
+    timelineFill.style.width = (video.currentTime / video.duration) * 100 + '%';
+  }
+});
 
     window.addEventListener('keydown', e => {
       const isTyping = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
@@ -199,6 +227,7 @@ const video = document.getElementById('video');
     }
 
     function playStream(url, name = '') {
+      currentChannelUrl = url; // Simpan url channel aktif
       video.classList.add('buffering');
       // Reset bar biru dan posisi video ke awal sebelum load
       video.pause();
@@ -263,7 +292,7 @@ const video = document.getElementById('video');
 
     // Saat internet kembali, lanjutkan load video (buffer pink akan bertambah)
     window.addEventListener('online', () => {
-      if (hls) {
+      if (hls && hls.media) {
         hls.startLoad();
       }
     });
@@ -273,11 +302,10 @@ const video = document.getElementById('video');
 
     // Saat buffering, tampilkan animasi, dan lanjutkan otomatis jika buffer sudah cukup
     video.addEventListener('waiting', () => {
-      video.classList.add('buffering');
-      if (hls) hls.startLoad(); // Paksa HLS.js lanjut download
+      if (hls) hls.startLoad();
     });
     video.addEventListener('stalled', () => {
-      if (hls) hls.startLoad(); // Paksa HLS.js lanjut download
+      if (hls) hls.startLoad();
     });
     video.addEventListener('playing', () => {
       video.classList.remove('buffering');
@@ -298,3 +326,35 @@ const video = document.getElementById('video');
       }
       loadPlaylist();
     });
+
+    // Fungsi refresh video player
+function refreshVideoPlayer() {
+  if (hls) {
+    hls.destroy(); // Hapus instance lama
+  }
+  const video = document.getElementById('video');
+  video.pause();
+  video.currentTime = 0;
+  video.src = '';
+  video.load();
+
+  // Inisialisasi ulang HLS.js dengan url channel aktif
+  hls = new Hls();
+  if (currentChannelUrl) {
+    hls.loadSource(currentChannelUrl);
+    hls.attachMedia(video);
+    video.play();
+  }
+}
+
+// Tombol refresh di info-bar
+document.getElementById('refreshVideoBtn').addEventListener('click', refreshVideoPlayer);
+
+// Keyboard shortcut: tekan "r" untuk refresh video
+window.addEventListener('keydown', e => {
+  const isTyping = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+  if (!isTyping && (e.key === 'r' || e.key === 'R')) {
+    e.preventDefault();
+    refreshVideoPlayer();
+  }
+});
