@@ -189,7 +189,7 @@ const video = document.getElementById('video');
         let first = savedChannel;
         if (!first) {
           // Cari channel TBS
-          first = channels.find(c => c.name.toLowerCase().includes('tbs')) || channels[0];
+          first = channels.find(c => c.name.toLowerCase() === 'tbs') || channels[0];
         }
         if (first) playStream(first.url, first.name);
       } catch (err) {
