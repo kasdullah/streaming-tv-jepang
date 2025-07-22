@@ -329,3 +329,12 @@ body {
   box-sizing: border-box;
   border: 1px solid #333;
 }
+
+/* === Awal: Sembunyikan info resolusi, histori error, dan url video saat fullscreen === */
+.media-wrapper:fullscreen .video-info-container,
+.media-wrapper:fullscreen .video-url-container,
+.media-wrapper:-webkit-full-screen .video-info-container,
+.media-wrapper:-webkit-full-screen .video-url-container {
+  display: none !important;
+}
+/* === Akhir: Sembunyikan info resolusi, histori error, dan url video saat fullscreen === */
